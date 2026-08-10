@@ -39,6 +39,14 @@ function showError(message) {
   setTimeout(() => banner.classList.add("hidden"), 5000);
 }
 
+function initials(name) {
+  const local = (name ?? "").split("@")[0];
+  const parts = local.split(/[.\s_-]+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
 // --- stats ---------------------------------------------------------------
 
 async function loadStats() {
@@ -47,18 +55,18 @@ async function loadStats() {
     const byStatus = Object.fromEntries(stats.by_status.map((r) => [r.status, r.count]));
 
     const cards = [
-      { label: "Total Tickets", value: stats.total_tickets },
-      { label: "Total Messages", value: stats.total_messages },
-      { label: "Open", value: byStatus.open || 0 },
-      { label: "In Progress", value: byStatus.in_progress || 0 },
-      { label: "Resolved", value: byStatus.resolved || 0 },
+      { label: "Total Tickets", value: stats.total_tickets, accent: "var(--color-primary)" },
+      { label: "Total Messages", value: stats.total_messages, accent: "var(--color-primary-2)" },
+      { label: "Open", value: byStatus.open || 0, accent: "var(--status-open-fg)" },
+      { label: "In Progress", value: byStatus.in_progress || 0, accent: "var(--status-in_progress-fg)" },
+      { label: "Resolved", value: byStatus.resolved || 0, accent: "var(--status-resolved-fg)" },
     ];
 
     const strip = document.getElementById("stats-strip");
     strip.innerHTML = cards
       .map(
         (c) => `
-        <div class="stat-card">
+        <div class="stat-card" style="--stat-accent: ${c.accent}">
           <div class="stat-value">${escapeHtml(String(c.value))}</div>
           <div class="stat-label">${escapeHtml(c.label)}</div>
         </div>`
@@ -72,7 +80,8 @@ async function loadStats() {
 // --- ticket list -----------------------------------------------------------
 
 async function loadTickets() {
-  const status = document.getElementById("status-filter").value;
+  const activePill = document.querySelector(".filter-pill.active");
+  const status = activePill ? activePill.dataset.status : "";
   const query = status ? `?status=${encodeURIComponent(status)}` : "";
 
   try {
@@ -87,7 +96,7 @@ function renderTicketList(tickets) {
   const list = document.getElementById("ticket-list");
 
   if (tickets.length === 0) {
-    list.innerHTML = `<li class="empty-state">No tickets match this filter.</li>`;
+    list.innerHTML = `<li class="empty-state"><span class="empty-icon">🗒️</span><p>No tickets match this filter.</p></li>`;
     return;
   }
 
@@ -156,20 +165,26 @@ function renderDetail(ticket, messages) {
             )
             .join("")}
         </select>
-        <button id="delete-ticket-btn" class="btn btn-danger">Delete</button>
+        <button id="delete-ticket-btn" class="btn btn-ghost-danger">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Delete
+        </button>
       </div>
     </div>
 
     <div class="message-list">
       ${
         messages.length === 0
-          ? `<p class="empty-state">No messages yet.</p>`
+          ? `<div class="empty-state"><span class="empty-icon">💬</span><p>No messages yet.</p></div>`
           : messages
               .map(
                 (m) => `
-              <div class="message-bubble">
-                <div class="message-meta">${escapeHtml(m.author)} &middot; ${formatDate(m.created_at)}</div>
-                <div>${escapeHtml(m.message_text)}</div>
+              <div class="message-row">
+                <div class="avatar">${escapeHtml(initials(m.author))}</div>
+                <div class="message-bubble">
+                  <div class="message-meta">${escapeHtml(m.author)} &middot; ${formatDate(m.created_at)}</div>
+                  <div class="message-text">${escapeHtml(m.message_text)}</div>
+                </div>
               </div>`
               )
               .join("")
@@ -251,7 +266,7 @@ async function confirmDelete() {
     if (selectedTicketId === pendingDeleteId) {
       selectedTicketId = null;
       document.getElementById("detail-pane").innerHTML =
-        `<p class="empty-state">Select a ticket to view its messages.</p>`;
+        `<div class="empty-state"><span class="empty-icon">👈</span><p>Select a ticket to view its messages.</p></div>`;
     }
     closeDeleteConfirm();
     await Promise.all([loadTickets(), loadStats()]);
@@ -304,7 +319,13 @@ document.addEventListener("DOMContentLoaded", () => {
   loadStats();
   loadTickets();
 
-  document.getElementById("status-filter").addEventListener("change", loadTickets);
+  document.querySelectorAll(".filter-pill").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll(".filter-pill").forEach((p) => p.classList.remove("active"));
+      pill.classList.add("active");
+      loadTickets();
+    });
+  });
 
   document.getElementById("new-ticket-btn").addEventListener("click", openNewTicketModal);
   document.getElementById("new-ticket-cancel").addEventListener("click", closeNewTicketModal);
