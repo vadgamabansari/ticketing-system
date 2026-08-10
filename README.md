@@ -71,6 +71,15 @@ connected to the instance, or `psql` using the connection URL). All three are
 safe to re-run. `app.py` also calls `ensure_tables()` on startup as a
 belt-and-suspenders fallback for a fresh instance.
 
+`ticketing-app-user` (the app's runtime role) can't authenticate through the
+browser SQL Editor's OAuth flow, so `01`–`03` typically get run as your own
+OAuth user instead — which leaves that user owning the tables. Since
+`ensure_tables()` runs `CREATE INDEX IF NOT EXISTS` on every app startup,
+and that requires table ownership, also run **`sql/04_grant_app_ownership.sql`**
+once (as the user who owns the tables) to transfer ownership to
+`ticketing-app-user` — otherwise the app crashes on boot with
+`InsufficientPrivilege: must be owner of table tickets`.
+
 ## 4. Run locally
 
 ```bash
