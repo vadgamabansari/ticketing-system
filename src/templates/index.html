@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support Tickets</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div id="error-banner" class="banner banner-error hidden" role="alert"></div>
+
+  <header class="app-header">
+    <h1>Support Tickets</h1>
+    <button id="new-ticket-btn" class="btn btn-primary">+ New Ticket</button>
+  </header>
+
+  <section id="stats-strip" class="stats-strip" aria-label="Ticket statistics"></section>
+
+  <main class="app-main">
+    <section class="ticket-panel">
+      <div class="toolbar">
+        <label for="status-filter">Status</label>
+        <select id="status-filter">
+          <option value="">All</option>
+          <option value="open">Open</option>
+          <option value="in_progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+      <ul id="ticket-list" class="ticket-list"></ul>
+    </section>
+
+    <section id="detail-pane" class="detail-pane">
+      <p class="empty-state">Select a ticket to view its messages.</p>
+    </section>
+  </main>
+
+  <!-- New ticket modal -->
+  <div id="new-ticket-modal" class="modal-overlay hidden">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="new-ticket-title">
+      <h2 id="new-ticket-title">New Ticket</h2>
+      <form id="new-ticket-form">
+        <label for="ticket-title">Title</label>
+        <input type="text" id="ticket-title" name="title" maxlength="200" required />
+
+        <label for="ticket-priority">Priority</label>
+        <select id="ticket-priority" name="priority">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+          <option value="urgent">Urgent</option>
+        </select>
+
+        <label for="ticket-category">Category</label>
+        <select id="ticket-category" name="category">
+          <option value="bug">Bug</option>
+          <option value="feature_request">Feature Request</option>
+          <option value="question">Question</option>
+          <option value="other" selected>Other</option>
+        </select>
+
+        <p id="new-ticket-error" class="form-error hidden"></p>
+
+        <div class="modal-actions">
+          <button type="button" id="new-ticket-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div id="delete-confirm-modal" class="modal-overlay hidden">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="delete-confirm-title">
+      <h2 id="delete-confirm-title">Delete this ticket?</h2>
+      <p id="delete-confirm-body"></p>
+      <div class="modal-actions">
+        <button type="button" id="delete-cancel" class="btn btn-secondary">Cancel</button>
+        <button type="button" id="delete-confirm" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
