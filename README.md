@@ -58,8 +58,10 @@ python setup_secrets.py
 ```
 
 Paste the connection URL from step 1 when prompted. This stores it as secret
-`database/lakebase-url` — `app.yaml` and `lakebase.py` only ever reference
-the scope/key names, never the value itself.
+`database/ticketing-lakebase-url` — a dedicated key so it doesn't collide
+with the plain `lakebase-url` key this workspace's other bootcamp apps use
+in the same `database` scope. `app.yaml` and `lakebase.py` only ever
+reference the scope/key names, never the value itself.
 
 ## 3. Create the schema + seed data
 

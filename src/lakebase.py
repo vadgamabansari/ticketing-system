@@ -20,7 +20,7 @@ from sqlalchemy import create_engine
 _w = WorkspaceClient()
 
 _SCOPE = os.environ.get("LAKEBASE_SECRET_SCOPE", "database")
-_KEY = os.environ.get("LAKEBASE_SECRET_KEY", "lakebase-url")
+_KEY = os.environ.get("LAKEBASE_SECRET_KEY", "ticketing-lakebase-url")
 
 
 def _lakebase_url() -> str:
